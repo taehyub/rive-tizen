@@ -4,7 +4,28 @@ project('rive_tizen',
         version : '0.1.0',
         license : 'MIT')
 
+
 #thorvg_dep = dependency('thorvg', required : true)
+
+cc = meson.get_compiler('cpp')
+
+pthread_lib = cc.find_library('pthread')
+dl_lib = cc.find_library('dl')
+gl_lib = cc.find_library('GL')
+
+skia_lib = cc.find_library('skia', dirs:[meson.current_source_dir()+'/submodule/skia/dependencies/skia/out/Static'])
+skia_header_files = [
+   'submodule/skia/dependencies/skia',
+   'submodule/skia/dependencies/skia/include/core',
+   'submodule/skia/dependencies/skia/include/effects',
+   'submodule/skia/dependencies/skia/include/gpu',
+   'submodule/skia/dependencies/skia/include/config',
+]
+
+glfw_lib = cc.find_library('glfw3', dirs:[meson.current_source_dir()+'/submodule/skia/dependencies/glfw_build/src'])
+glfw_header_files = [
+   'submodule/skia/dependencies/glfw/include'
+]
 
 run_command('script/install.sh')
 
@@ -89,9 +110,21 @@ rive_src = [
    'submodule/src/transform_component.cpp',
 ]
 
+skia_dep = declare_dependency(
+	include_directories : [skia_header_files],
+   dependencies : [skia_lib, pthread_lib],
+)
+
+skia_renderer_dep = declare_dependency(
+   include_directories : include_directories(['submodule/skia/renderer/include', skia_header_files]),
+   sources : ['submodule/skia/renderer/src/skia_renderer.cpp'],
+   dependencies : skia_dep
+)
+
 rive_dep = declare_dependency(
    include_directories : include_directories(['submodule/include']),
-   sources : rive_src
+   sources : rive_src,
+   dependencies : skia_renderer_dep
 )
 
 rive_tizen_lib = library(
@@ -120,3 +153,17 @@ pkg_mod.generate(
 )
 
 subdir('example')
+
+rive_viewer_dep = declare_dependency(
+	include_directories : [skia_header_files, glfw_header_files],
+   dependencies : [skia_lib, glfw_lib, dl_lib, gl_lib],
+)
+
+rive_viewer_src = [
+  'submodule/skia/viewer/src/main.cpp'
+]
+
+executable('rive_viewer',
+           rive_viewer_src,
+           dependencies : [rive_viewer_dep, skia_renderer_dep, rive_dep],
+           install : true)

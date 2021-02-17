@@ -1,7 +1,7 @@
-diff --git include/math/aabb.hpp include/math/aabb.hpp
+diff --git a/include/math/aabb.hpp b/include/math/aabb.hpp
 index 6e5114e..1824756 100644
---- include/math/aabb.hpp
-+++ include/math/aabb.hpp
+--- a/include/math/aabb.hpp
++++ b/include/math/aabb.hpp
 @@ -15,10 +15,6 @@ namespace rive
  			float buffer[4];
  			struct
@@ -20,10 +20,51 @@ index 6e5114e..1824756 100644
 -#endif
 \ No newline at end of file
 +#endif
-diff --git src/math/aabb.cpp src/math/aabb.cpp
+diff --git a/skia/renderer/include/to_skia.hpp b/skia/renderer/include/to_skia.hpp
+index 68b0ad4..e34b0d7 100644
+--- a/skia/renderer/include/to_skia.hpp
++++ b/skia/renderer/include/to_skia.hpp
+@@ -16,20 +16,15 @@ namespace rive
+ 		static SkMatrix convert(const rive::Mat2D& m)
+ 		{
+ 			SkMatrix skMatrix;
+-			skMatrix.set9((SkScalar[9])
+-			              // Skia Matrix is row major
+-			              {// Row 1
+-			               m[0],
+-			               m[2],
+-			               m[4],
+-			               // Row 2
+-			               m[1],
+-			               m[3],
+-			               m[5],
+-			               // Row 3
+-			               0.0,
+-			               0.0,
+-			               1.0});
++			SkScalar buffer[9] =
++					{// Row 1
++					m[0], m[2], m[4],
++					// Row 2
++					m[1], m[3], m[5],
++					// Row 3
++					0.0, 0.0, 1.0};
++
++			skMatrix.set9(buffer);
+ 			return skMatrix;
+ 		}
+ 
+@@ -107,4 +102,4 @@ namespace rive
+ 		}
+ 	};
+ } // namespace rive
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/src/math/aabb.cpp b/src/math/aabb.cpp
 index 94de5d0..a7ea1db 100644
---- src/math/aabb.cpp
-+++ src/math/aabb.cpp
+--- a/src/math/aabb.cpp
++++ b/src/math/aabb.cpp
 @@ -77,9 +77,9 @@ bool AABB::areIdentical(const AABB& a, const AABB& b)
  	return a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3];
  }
